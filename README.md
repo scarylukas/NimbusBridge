@@ -1,6 +1,6 @@
 # NimbusBridge
 
-NimbusBridge reads a SteelSeries Nimbus+ over Bluetooth on macOS and forwards its controls to a virtual gamepad for Farming Simulator 25.
+NimbusBridge reads a SteelSeries Nimbus+ over Bluetooth on macOS and forwards its controls to a virtual gamepad for the Mac App Store edition of Farming Simulator 25.
 
 NimbusBridge is in alpha and requires macOS 27 or later. The virtual controller has been created on a development Mac and recognized by FS25. Gameplay mappings and exclusive input still need end-to-end validation.
 
