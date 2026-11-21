@@ -156,14 +156,16 @@ final class VirtualControllerService {
             return
         }
 
-        // macOS separately checks PostEvent when opening the virtual HID user client.
-        guard ensureDeviceControlAccess() else {
-            status = "Blocked — Device Control and Data Access permission required"
-            log.write("[ERROR] \(status). Enable NimbusBridge in System Settings → Privacy & Security → Device Control and Data Access, then try Start Emulation again.")
-            return
+        // Request access on the first attempt. On retries, let CoreHID check it
+        // directly because the preflight result can stay stale after a grant.
+        if !requestedDeviceControlAccess && !CGPreflightPostEventAccess() {
+            requestedDeviceControlAccess = true
+            guard CGRequestPostEventAccess() else {
+                reportMissingDeviceControlAccess(log: log)
+                return
+            }
         }
 
-        forwardedReports = 0
         let serial = "de.scaryteam.NimbusBridge.virtual-gamepad"
         let properties = HIDVirtualDevice.Properties(
             descriptor: VirtualGamepadReport.descriptor,
@@ -182,10 +184,16 @@ final class VirtualControllerService {
         )
         log.write("[INFO] Creating CoreHID virtual HID 1038:1420, transport=Virtual, descriptor=\(properties.descriptor.count) bytes, signed entitlement=true; \(ProcessInfo.processInfo.operatingSystemVersionString)")
         guard let newDevice = HIDVirtualDevice(properties: properties) else {
-            status = "Failed — macOS could not create the virtual HID device"
-            log.write("[ERROR] \(status). HIDVirtualDevice.init returned nil (no error code). Check the com.apple.iohid:userdevice system log at this timestamp.")
+            if CGPreflightPostEventAccess() {
+                status = "Failed — macOS could not create the virtual HID device"
+                log.write("[ERROR] \(status). HIDVirtualDevice.init returned nil (no error code). Check the com.apple.iohid:userdevice system log at this timestamp.")
+            } else {
+                reportMissingDeviceControlAccess(log: log)
+                showPermissionPrompt()
+            }
             return
         }
+        forwardedReports = 0
         guard acquireInput() else {
             status = "Blocked — exclusive Nimbus+ input unavailable"
             return
@@ -255,17 +263,9 @@ final class VirtualControllerService {
         log.write("[INFO] Emulation stopped")
     }
 
-    private func ensureDeviceControlAccess() -> Bool {
-        if CGPreflightPostEventAccess() { return true }
-
-        if !requestedDeviceControlAccess {
-            requestedDeviceControlAccess = true
-            // Preflight alone does not ask macOS to register the app for user approval.
-            return CGRequestPostEventAccess()
-        }
-
-        showPermissionPrompt()
-        return false
+    private func reportMissingDeviceControlAccess(log: DiagnosticLog) {
+        status = "Blocked — Device Control and Data Access permission required"
+        log.write("[ERROR] \(status). Enable NimbusBridge in System Settings → Privacy & Security → Device Control and Data Access, then try Start Emulation again.")
     }
 
     private func showPermissionPrompt() {
