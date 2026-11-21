@@ -8,7 +8,7 @@ NimbusBridge is in alpha and requires macOS 27 or later. The virtual controller 
 
 1. Pair Nimbus+ in macOS Bluetooth settings and open NimbusBridge.
 2. With the game closed, select **FS25 Setup → Configure FS25** and choose the `FarmingSimulator2025` folder containing `inputBinding.xml`.
-3. Select **Start Emulation**, wait for **Emulation active**, then open FS25. If setup says the virtual controller has yet to be detected, open the game once with emulation running, close it, and run setup again.
+3. Select **Start Emulation**. If NimbusBridge asks for permission, choose **Open System Settings** and enable it under **Privacy & Security → Device Control and Data Access**. Return, select **Start Emulation** again, and wait for **Emulation active** before opening FS25. If setup says the virtual controller has yet to be detected, open the game once with emulation running, close it, and run setup again.
 4. Close the NimbusBridge window to keep emulation running from the macOS menu bar. The menu bar icon opens the window or stops emulation.
 
 Setup installs the device profile and adds missing menu navigation bindings for the virtual controller. It backs up changed configuration in `NimbusBridge Backups` under the selected game folder. **Show Instructions** provides manual setup steps and lets you save the device profile.

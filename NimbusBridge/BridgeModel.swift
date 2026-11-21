@@ -23,19 +23,20 @@ final class BridgeModel {
         exclusive.onInput = { [weak input] snapshot in input?.publishExclusive(snapshot) }
         exclusive.onDisconnect = { [weak self] in self?.stopEmulation() }
         virtual.onStartFailure = { [weak self] in self?.releaseExclusiveInput() }
-        log.write("[INFO] Input monitoring initialized; CoreHID virtual output ready")
+        log.write("[INFO] Input monitoring initialized; virtual HID is created when emulation starts")
     }
 
     func startEmulation() {
-        guard !exclusive.isActive else { return }
-        guard exclusive.start(log: log) else {
-            inputStatus = "Exclusive input unavailable. See Diagnostics."
-            return
+        virtual.start(log: log) {
+            guard exclusive.start(log: log) else {
+                inputStatus = "Exclusive input unavailable. See Diagnostics."
+                return false
+            }
+            input.usesExclusiveInput = true
+            inputStatus = "Exclusive Nimbus+ input"
+            input.publishExclusive(InputSnapshot())
+            return true
         }
-        input.usesExclusiveInput = true
-        inputStatus = "Exclusive Nimbus+ input"
-        input.publishExclusive(InputSnapshot())
-        virtual.start(log: log)
     }
 
     func stopEmulation() {

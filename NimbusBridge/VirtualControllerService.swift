@@ -1,3 +1,5 @@
+import AppKit
+import CoreGraphics
 import CoreHID
 import Foundation
 import Observation
@@ -143,47 +145,58 @@ final class VirtualControllerService {
     private var device: HIDVirtualDevice?
     private var delegate: VirtualGamepadDelegate?
     private var generation = 0
+    private var requestedDeviceControlAccess = false
     var isActive: Bool { isStarting || created }
 
-    func start(log: DiagnosticLog) {
+    func start(log: DiagnosticLog, acquireInput: () -> Bool) {
         guard !isActive else { return }
         guard hasVirtualDeviceEntitlement else {
             status = "Blocked — signed virtual HID entitlement is absent"
             log.write("[ERROR] \(status)")
-            onStartFailure?()
+            return
+        }
+
+        // macOS separately checks PostEvent when opening the virtual HID user client.
+        guard ensureDeviceControlAccess() else {
+            status = "Blocked — Device Control and Data Access permission required"
+            log.write("[ERROR] \(status). Enable NimbusBridge in System Settings → Privacy & Security → Device Control and Data Access, then try Start Emulation again.")
+            return
+        }
+
+        forwardedReports = 0
+        let serial = "de.scaryteam.NimbusBridge.virtual-gamepad"
+        let properties = HIDVirtualDevice.Properties(
+            descriptor: VirtualGamepadReport.descriptor,
+            vendorID: 0x1038,
+            productID: 0x1420,
+            transport: .virtual,
+            product: deviceName,
+            manufacturer: "NimbusBridge",
+            modelNumber: "FS25-Nimbus-Mapping-Experiment",
+            versionNumber: 1,
+            serialNumber: serial,
+            uniqueID: "de.scaryteam.NimbusBridge.virtual-gamepad",
+            locationID: nil,
+            localizationCode: nil,
+            extraProperties: nil
+        )
+        log.write("[INFO] Creating CoreHID virtual HID 1038:1420, transport=Virtual, descriptor=\(properties.descriptor.count) bytes, signed entitlement=true; \(ProcessInfo.processInfo.operatingSystemVersionString)")
+        guard let newDevice = HIDVirtualDevice(properties: properties) else {
+            status = "Failed — macOS could not create the virtual HID device"
+            log.write("[ERROR] \(status). HIDVirtualDevice.init returned nil (no error code). Check the com.apple.iohid:userdevice system log at this timestamp.")
+            return
+        }
+        guard acquireInput() else {
+            status = "Blocked — exclusive Nimbus+ input unavailable"
             return
         }
 
         isStarting = true
         status = "Starting…"
-        forwardedReports = 0
         generation += 1
         let currentGeneration = generation
         Task {
-            let serial = "de.scaryteam.NimbusBridge.virtual-gamepad"
-            let properties = HIDVirtualDevice.Properties(
-                descriptor: VirtualGamepadReport.descriptor,
-                vendorID: 0x1038,
-                productID: 0x1420,
-                transport: .virtual,
-                product: deviceName,
-                manufacturer: "NimbusBridge",
-                modelNumber: "FS25-Nimbus-Mapping-Experiment",
-                versionNumber: 1,
-                serialNumber: serial,
-                uniqueID: "de.scaryteam.NimbusBridge.virtual-gamepad",
-                locationID: nil,
-                localizationCode: nil,
-                extraProperties: nil
-            )
-            guard let newDevice = HIDVirtualDevice(properties: properties) else {
-                isStarting = false
-                status = "Failed — CoreHID rejected the virtual device properties"
-                log.write("[ERROR] \(status)")
-                onStartFailure?()
-                return
-            }
-
+            guard generation == currentGeneration else { return }
             let newDelegate = VirtualGamepadDelegate()
             await newDevice.activate(delegate: newDelegate)
             guard generation == currentGeneration else { return }
@@ -240,6 +253,35 @@ final class VirtualControllerService {
         created = false
         status = "Stopped"
         log.write("[INFO] Emulation stopped")
+    }
+
+    private func ensureDeviceControlAccess() -> Bool {
+        if CGPreflightPostEventAccess() { return true }
+
+        if !requestedDeviceControlAccess {
+            requestedDeviceControlAccess = true
+            // Preflight alone does not ask macOS to register the app for user approval.
+            return CGRequestPostEventAccess()
+        }
+
+        showPermissionPrompt()
+        return false
+    }
+
+    private func showPermissionPrompt() {
+        let alert = NSAlert()
+        alert.messageText = "Allow NimbusBridge to create a virtual controller"
+        alert.informativeText = """
+        In System Settings → Privacy & Security → Device Control and Data Access, enable NimbusBridge. If it is missing, click + and select NimbusBridge.app.
+
+        Then return to NimbusBridge and click Start Emulation again.
+        """
+        alert.addButton(withTitle: "Open System Settings")
+        alert.addButton(withTitle: "Cancel")
+        NSApp.activate()
+        guard alert.runModal() == .alertFirstButtonReturn else { return }
+        guard let url = URL(string: "x-apple.systempreferences:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility") else { return }
+        NSWorkspace.shared.open(url)
     }
 
     private var hasVirtualDeviceEntitlement: Bool {
