@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="NimbusBridge connects the SteelSeries Nimbus+ to Farming Simulator 25 on macOS. Explore the open-source alpha.">
+    <meta name="theme-color" content="#07101f">
+    <title>NimbusBridge — SteelSeries Nimbus+ for Farming Simulator 25</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+
+    <header class="site-header">
+        <a class="brand" href="#start" aria-label="NimbusBridge — home">
+            <span class="brand-mark" aria-hidden="true">
+                <svg viewBox="0 0 40 40" role="img">
+                    <path d="M11 25.5c-3.4 0-6-2.5-6-5.8s2.5-5.8 5.8-5.8c.8-4.7 4.6-8 9.3-8 5.2 0 9.3 4.2 9.3 9.4h.3c3.1 0 5.3 2.2 5.3 5.1 0 2.9-2.2 5.1-5.3 5.1H11Z"/>
+                    <path class="bridge-line" d="M11 30.5c4.1-3.4 13.9-3.4 18 0"/>
+                </svg>
+            </span>
+            <span>NimbusBridge</span>
+        </a>
+        <nav aria-label="Main navigation">
+            <a href="#why">Why NimbusBridge</a>
+            <a href="#how-it-works">How it works</a>
+            <a href="#capabilities">Capabilities</a>
+            <a class="nav-pill" href="#status">Project status</a>
+        </nav>
+    </header>
+
+    <main id="start">
+        <section class="hero">
+            <div class="hero-copy">
+                <p class="eyebrow"><span></span> Open-source alpha for macOS</p>
+                <h1>SteelSeries Nimbus+<br><em>for Farming Simulator 25.</em></h1>
+                <p class="hero-lead">NimbusBridge is built specifically for the Bluetooth SteelSeries Nimbus+ and Farming Simulator 25 (FS25) on Mac. It maps physical controller input to a virtual gamepad with a dedicated FS25 profile.</p>
+                <div class="hero-actions">
+                    <a class="button primary" href="https://github.com/scarylukas/NimbusBridge/releases/tag/v0.1.0-alpha.1">Get the source release</a>
+                    <span class="availability"><i></i> v0.1.0-alpha.1</span>
+                </div>
+            </div>
+
+            <div class="hero-visual" aria-label="Visualization of the signal flow through NimbusBridge">
+                <div class="signal-orbit orbit-one"></div>
+                <div class="signal-orbit orbit-two"></div>
+                <div class="controller-card glass-card">
+                    <div class="card-topline"><span>Bluetooth input</span><b>Nimbus+</b></div>
+                    <svg class="controller" viewBox="0 0 360 220" aria-hidden="true">
+                        <path d="M80 53c30-15 52-18 100-18s70 3 100 18c27 14 47 97 30 119-11 14-28 6-43-9l-26-27H119l-26 27c-15 15-32 23-43 9-17-22 3-105 30-119Z"/>
+                        <circle cx="116" cy="104" r="25"/><path d="M116 90v28M102 104h28"/>
+                        <circle class="button-dot" cx="250" cy="88" r="7"/><circle class="button-dot" cx="270" cy="106" r="7"/><circle class="button-dot" cx="230" cy="106" r="7"/><circle class="button-dot" cx="250" cy="124" r="7"/>
+                        <circle class="stick" cx="156" cy="143" r="17"/><circle class="stick" cx="204" cy="143" r="17"/>
+                    </svg>
+                    <div class="axis-row"><span>Analog axes</span><div><i style="--level:72%"></i></div><strong>LIVE</strong></div>
+                </div>
+                <div class="bridge-node">
+                    <span class="pulse"></span>
+                    <svg viewBox="0 0 40 40" aria-hidden="true"><path d="M11 25.5c-3.4 0-6-2.5-6-5.8s2.5-5.8 5.8-5.8c.8-4.7 4.6-8 9.3-8 5.2 0 9.3 4.2 9.3 9.4h.3c3.1 0 5.3 2.2 5.3 5.1 0 2.9-2.2 5.1-5.3 5.1H11Z"/></svg>
+                </div>
+                <div class="output-chip glass-card"><span class="chip-icon">⌁</span><div><small>Output</small><strong>FS25 virtual gamepad</strong></div><i></i></div>
+            </div>
+        </section>
+
+        <section class="problem" id="why">
+            <div class="problem-label">
+                <p class="eyebrow">Why NimbusBridge exists</p>
+
+            </div>
+            <div class="problem-copy">
+                <h2>A dedicated controller<br><em>profile for FS25.</em></h2>
+                <p>FS25 uses device identities to select controller mappings. NimbusBridge exposes the Nimbus+ input through a virtual device with the identity and control layout targeted by the included FS25 profile.</p>
+
+            </div>
+            <div class="identity-diagram" aria-label="Controller identity compatibility problem">
+                <div class="identity-card physical">
+                    <span>PHYSICAL DEVICE</span>
+                    <strong>SteelSeries Nimbus+</strong>
+                    <small>Original hardware identity</small>
+                </div>
+                <div class="identity-route">
+                    <span></span>
+                    <div>VID / PID</div>
+                    <i aria-hidden="true">×</i>
+                </div>
+                <div class="identity-card game">
+                    <span>GAME EXPECTATION</span>
+                    <strong>FS25 device profile</strong>
+                    <small>Model-specific recognition</small>
+                </div>
+                <div class="bridge-answer">
+                    <b>NimbusBridge</b>
+                    <span>creates a predictable virtual gamepad identity and maps the controls into a form the game can understand.</span>
+                </div>
+            </div>
+        </section>
+
+        <section class="story" id="how-it-works">
+            <div class="section-heading">
+                <p class="eyebrow">FS25 setup</p>
+                <h2>Connect, configure,<br>then launch FS25.</h2>
+            </div>
+            <div class="flow" role="list">
+                <article role="listitem">
+                    <div class="flow-icon">◉</div>
+                    <h3>Connect</h3>
+                    <p>Pair the SteelSeries Nimbus+ over Bluetooth and open NimbusBridge to view its input.</p>
+                </article>
+                <article role="listitem">
+                    <div class="flow-icon">⌘</div>
+                    <h3>Configure</h3>
+                    <p>With FS25 closed, run FS25 Setup to install the device profile and add missing menu bindings. The app backs up changed game files.</p>
+                </article>
+                <article role="listitem">
+                    <div class="flow-icon">↗</div>
+                    <h3>Start emulation</h3>
+                    <p>Start emulation, wait for the virtual controller, and then launch Farming Simulator 25.</p>
+                </article>
+            </div>
+        </section>
+
+        <section class="capabilities" id="capabilities">
+            <div class="capability-intro">
+                <p class="eyebrow">Control without guesswork</p>
+                <h2>See exactly what<br>happens to the signal.</h2>
+                <p>The interface brings live monitoring, profile configuration, and diagnostics together — making controller behavior easier to understand.</p>
+            </div>
+            <div class="dashboard glass-card" aria-label="Conceptual signal monitor interface">
+                <div class="dash-header"><span><i></i> Signal monitor</span><small>concept preview</small></div>
+                <div class="dash-grid">
+                    <div class="meter"><span>LX</span><div><i style="--x:68%"></i></div><b>+0.42</b></div>
+                    <div class="meter"><span>LY</span><div><i style="--x:31%"></i></div><b>−0.38</b></div>
+                    <div class="meter"><span>RX</span><div><i style="--x:52%"></i></div><b>+0.04</b></div>
+                    <div class="meter"><span>RY</span><div><i style="--x:50%"></i></div><b>0.00</b></div>
+                </div>
+                <div class="dash-bottom"><span>Profile</span><strong>Nimbus default</strong><span class="status-dot">Active</span></div>
+            </div>
+            <div class="feature-strip">
+                <article><span>◌</span><div><h3>Live monitoring</h3><p>Axes, buttons, and event counts in one view.</p></div></article>
+                <article><span>◇</span><div><h3>Mapping profiles</h3><p>Settings saved locally on your device.</p></div></article>
+                <article><span>⌁</span><div><h3>Diagnostics</h3><p>A clear view of physical input and virtual output.</p></div></article>
+            </div>
+        </section>
+
+        <section class="status-section" id="status">
+            <div class="status-card">
+                <div>
+                    <p class="eyebrow">Project status</p>
+                    <h2>Try the source alpha.</h2>
+                    <p>Requires macOS 27 or later and Xcode 27.2. Virtual HID emulation requires an Apple Development signature and a provisioning profile with the virtual device entitlement.</p>
+                </div>
+                <div class="roadmap" aria-label="Validation status">
+                    <div class="done"><i></i><span>Virtual device enumerated on macOS</span></div>
+                    <div class="done"><i></i><span>Virtual device recognized by FS25</span></div>
+                    <div class="active"><i></i><span>Gameplay mapping validation pending</span></div>
+                    <p><a href="https://github.com/scarylukas/NimbusBridge">View source and setup on GitHub</a></p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <a class="brand" href="#start"><span class="brand-mark mini" aria-hidden="true">☁</span><span>NimbusBridge</span></a>
+        <p>Independent, MIT-licensed project for SteelSeries Nimbus+ and FS25.</p>
+        <p>© <span id="year">2026</span> NimbusBridge</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
